@@ -4,13 +4,9 @@ from flask import Flask, request, jsonify
 
 app = Flask(__name__)
 
-# =========================
-# CONFIG DESDE VARIABLES DE ENTORNO
-# =========================
-
-VERIFY_TOKEN = os.environ.get("prueba123")
-ACCESS_TOKEN = os.environ.get("EAAmKGOiDrvQBQ1fIEpOLH7lzXv8MLuMZAWpgP8euzahBuD7ZB5b8VSjvbymR2KSiQ1stZAUnTVZBn3qxdFZCxgCeDpqZBZARsTUHZCniukt8rAZBgsRavwp3wqzZCUJXeGKwTMqRR1AOfhWZAfGgZA7DUhcXehf3teX53EWCpQBRekr8aZCTyNZBdw1b4KhZCRopnb981oBi6ZCSqsipnsgAd0ZAy3mSeEOzyraGezYbDQaTt1GN8vs60K6y5dVusFzmlrPTjymnn16kqxd9JKu1IlweiZCwZDZD")
-PHONE_NUMBER_ID = os.environ.get("1001578813037387")
+VERIFY_TOKEN = os.environ.get("VERIFY_TOKEN", "prueba123")
+ACCESS_TOKEN = os.environ.get("ACCESS_TOKEN", "")
+PHONE_NUMBER_ID = os.environ.get("PHONE_NUMBER_ID", "")
 
 
 @app.route("/", methods=["GET"])
@@ -20,12 +16,16 @@ def home():
 
 @app.route("/webhook", methods=["GET"])
 def verify():
-    token = request.args.get("hub.verify_token")
-    challenge = request.args.get("hub.challenge")
+    try:
+        token = request.args.get("hub.verify_token")
+        challenge = request.args.get("hub.challenge")
 
-    if token == VERIFY_TOKEN:
-        return challenge
-    return "Error de verificación", 403
+        if token == VERIFY_TOKEN:
+            return challenge, 200
+        else:
+            return "Token incorrecto", 403
+    except Exception as e:
+        return f"Error interno: {str(e)}", 500
 
 
 @app.route("/webhook", methods=["POST"])
@@ -73,6 +73,10 @@ def procesar_mensaje(texto):
 
 
 def enviar_mensaje(numero, mensaje):
+    if not ACCESS_TOKEN or not PHONE_NUMBER_ID:
+        print("Faltan variables de entorno")
+        return
+
     url = f"https://graph.facebook.com/v19.0/{PHONE_NUMBER_ID}/messages"
 
     headers = {
@@ -91,3 +95,5 @@ def enviar_mensaje(numero, mensaje):
 
     response = requests.post(url, headers=headers, json=payload)
     print("Respuesta Meta:", response.status_code, response.text)
+
+
