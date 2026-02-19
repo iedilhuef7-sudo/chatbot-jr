@@ -1,30 +1,22 @@
 import requests
+import os
 from flask import Flask, request, jsonify
 
 app = Flask(__name__)
 
 # =========================
-# CONFIGURACIÓN
+# CONFIG DESDE VARIABLES DE ENTORNO
 # =========================
 
-VERIFY_TOKEN = "prueba123"
+VERIFY_TOKEN = os.environ.get("prueba123")
+ACCESS_TOKEN = os.environ.get("EAAmKGOiDrvQBQ1fIEpOLH7lzXv8MLuMZAWpgP8euzahBuD7ZB5b8VSjvbymR2KSiQ1stZAUnTVZBn3qxdFZCxgCeDpqZBZARsTUHZCniukt8rAZBgsRavwp3wqzZCUJXeGKwTMqRR1AOfhWZAfGgZA7DUhcXehf3teX53EWCpQBRekr8aZCTyNZBdw1b4KhZCRopnb981oBi6ZCSqsipnsgAd0ZAy3mSeEOzyraGezYbDQaTt1GN8vs60K6y5dVusFzmlrPTjymnn16kqxd9JKu1IlweiZCwZDZD")
+PHONE_NUMBER_ID = os.environ.get("1001578813037387")
 
-ACCESS_TOKEN = "EAAmKGOiDrvQBQ1fIEpOLH7lzXv8MLuMZAWpgP8euzahBuD7ZB5b8VSjvbymR2KSiQ1stZAUnTVZBn3qxdFZCxgCeDpqZBZARsTUHZCniukt8rAZBgsRavwp3wqzZCUJXeGKwTMqRR1AOfhWZAfGgZA7DUhcXehf3teX53EWCpQBRekr8aZCTyNZBdw1b4KhZCRopnb981oBi6ZCSqsipnsgAd0ZAy3mSeEOzyraGezYbDQaTt1GN8vs60K6y5dVusFzmlrPTjymnn16kqxd9JKu1IlweiZCwZDZD"
-PHONE_NUMBER_ID = "1001578813037387"
-
-
-# =========================
-# RUTA PRINCIPAL (PARA RENDER)
-# =========================
 
 @app.route("/", methods=["GET"])
 def home():
     return "Bot activo", 200
 
-
-# =========================
-# VERIFICACIÓN WEBHOOK META
-# =========================
 
 @app.route("/webhook", methods=["GET"])
 def verify():
@@ -35,10 +27,6 @@ def verify():
         return challenge
     return "Error de verificación", 403
 
-
-# =========================
-# RECIBIR MENSAJES
-# =========================
 
 @app.route("/webhook", methods=["POST"])
 def webhook():
@@ -66,10 +54,6 @@ def webhook():
     return jsonify({"status": "ok"}), 200
 
 
-# =========================
-# LÓGICA DEL BOT
-# =========================
-
 def procesar_mensaje(texto):
     texto = texto.lower()
 
@@ -87,10 +71,6 @@ def procesar_mensaje(texto):
 3️⃣ ¿Cómo votar?
 """
 
-
-# =========================
-# ENVIAR MENSAJE A WHATSAPP
-# =========================
 
 def enviar_mensaje(numero, mensaje):
     url = f"https://graph.facebook.com/v19.0/{PHONE_NUMBER_ID}/messages"
