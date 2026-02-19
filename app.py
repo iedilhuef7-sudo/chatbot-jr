@@ -16,16 +16,16 @@ def home():
 
 @app.route("/webhook", methods=["GET"])
 def verify():
-    try:
-        token = request.args.get("hub.verify_token")
-        challenge = request.args.get("hub.challenge")
+    token = request.args.get("hub.verify_token")
+    challenge = request.args.get("hub.challenge")
 
-        if token == VERIFY_TOKEN:
-            return challenge, 200
-        else:
-            return "Token incorrecto", 403
-    except Exception as e:
-        return f"Error interno: {str(e)}", 500
+    print("TOKEN RECIBIDO:", token)
+    print("TOKEN EN RENDER:", VERIFY_TOKEN)
+
+    if token == VERIFY_TOKEN:
+        return challenge, 200
+    else:
+        return "Token incorrecto", 403
 
 
 @app.route("/webhook", methods=["POST"])
@@ -95,5 +95,6 @@ def enviar_mensaje(numero, mensaje):
 
     response = requests.post(url, headers=headers, json=payload)
     print("Respuesta Meta:", response.status_code, response.text)
+
 
 
