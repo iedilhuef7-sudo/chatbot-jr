@@ -53,13 +53,13 @@ def webhook():
                         for msg in value["messages"]:
                             wa_id = msg["from"]
 
-                            # Texto simple
+                            # Mensaje de texto
                             if msg.get("type") == "text":
                                 texto = msg["text"]["body"]
                                 if wa_id not in usuarios:
                                     usuarios[wa_id] = {"estado": "inicio"}
                                 respuesta = manejar_conversacion(wa_id, texto)
-                                if respuesta:  # enviar solo si hay texto
+                                if respuesta:
                                     enviar_mensaje(wa_id, respuesta)
 
                             # Respuesta de lista interactiva
@@ -86,7 +86,7 @@ def manejar_conversacion(wa_id, texto):
     # Inicio
     if usuario["estado"] == "inicio":
         usuario["estado"] = "esperando_nombre"
-        return "👋 ¡Bienvenido!\n\nPara continuar necesito algunos datos:\n\n👉 ¿Cuál es tu nombre completo?"
+        return "👋 ¡Bienvenido!\n\nPara continuar necesito algunos datos:\n👉 ¿Cuál es tu nombre completo?"
 
     # Captura nombre
     elif usuario["estado"] == "esperando_nombre":
@@ -94,7 +94,7 @@ def manejar_conversacion(wa_id, texto):
         usuario["estado"] = "esperando_municipio"
         return "Gracias 😊\n\n👉 ¿De qué municipio de Cundinamarca nos escribes?"
 
-    # Captura municipio y muestra menú
+    # Captura municipio y muestra menú interactivo
     elif usuario["estado"] == "esperando_municipio":
         usuario["municipio"] = texto
         usuario["estado"] = "registrado"
@@ -116,7 +116,7 @@ def manejar_conversacion(wa_id, texto):
             tipo="menu",
             opciones=opciones
         )
-        return ""  # Ya enviamos el menú interactivo
+        return ""  # Ya se envió el menú, no se devuelve texto
 
     # Ya registrado → usar FAQ
     else:
@@ -132,7 +132,7 @@ def procesar_mensaje(texto):
         return "Pertenezco al Partido Conservador Colombiano 💙. Trabajamos por Cundinamarca con compromiso social y ambiental."
 
     elif "votar" in texto:
-        return "🗳️ Para votar:\n\n1️⃣ Acude a tu puesto de votación\n2️⃣ Pide tarjetón Cámara – Cundinamarca\n3️⃣ Busca Partido Conservador\n4️⃣ Marca 💙 C101 💙\n5️⃣ Deposita tu voto"
+        return "🗳️ Para votar:\n1️⃣ Acude a tu puesto de votación\n2️⃣ Pide tarjetón Cámara – Cundinamarca\n3️⃣ Busca Partido Conservador\n4️⃣ Marca 💙 C101 💙\n5️⃣ Deposita tu voto"
 
     elif "quien es" in texto or "julio roberto" in texto:
         return "Julio Roberto Salazar es Representante a la Cámara por Cundinamarca, ingeniero civil y líder social 🌱"
@@ -165,7 +165,7 @@ def procesar_mensaje(texto):
         return "👋 Estoy para ayudarte.\n\nPuedes preguntarme por:\n✔️ Quién es\n✔️ Experiencia\n✔️ Proyectos\n✔️ Cómo votar\n✔️ Medio ambiente\n✔️ Seguridad\n✔️ Adulto mayor\n✔️ Contacto"
 
 # =========================
-# ENVÍO MENSAJES
+# ENVÍO MENSAJES (TEXTO O LISTA INTERACTIVA)
 # =========================
 def enviar_mensaje(numero, mensaje, tipo="text", opciones=None):
     """
@@ -220,5 +220,3 @@ def enviar_mensaje(numero, mensaje, tipo="text", opciones=None):
 # =========================
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
-
-
