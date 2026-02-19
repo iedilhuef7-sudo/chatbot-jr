@@ -62,15 +62,6 @@ def webhook():
                                 if respuesta:
                                     enviar_mensaje(wa_id, respuesta)
 
-                            # Respuesta de lista interactiva
-                            elif msg.get("type") == "interactive":
-                                interactive = msg.get("interactive", {})
-                                tipo = interactive.get("type")
-                                if tipo == "list_reply":
-                                    seleccion = interactive["list_reply"]["title"]
-                                    respuesta = procesar_mensaje(seleccion)
-                                    enviar_mensaje(wa_id, respuesta)
-
     except Exception as e:
         print("Error en webhook:", e)
 
@@ -94,31 +85,27 @@ def manejar_conversacion(wa_id, texto):
         usuario["estado"] = "esperando_municipio"
         return "Gracias 😊\n\n👉 ¿De qué municipio de Cundinamarca nos escribes?"
 
-    # Captura municipio y muestra menú interactivo
+    # Captura municipio y muestra menú numerado
     elif usuario["estado"] == "esperando_municipio":
         usuario["municipio"] = texto
         usuario["estado"] = "registrado"
 
-        opciones = [
-            "¿Quién es Julio Roberto?",
-            "Experiencia",
-            "Proyectos",
-            "Cómo votar",
-            "Medio ambiente",
-            "Seguridad",
-            "Adulto mayor",
-            "Contacto"
-        ]
-
-        enviar_mensaje(
-            wa_id,
-            f"Perfecto {usuario['nombre']} 💚\n\nTe registramos como ciudadano de {usuario['municipio']}.\n\nAhora puedes preguntarme sobre:",
-            tipo="menu",
-            opciones=opciones
+        menu = (
+            f"Perfecto {usuario['nombre']} 💚\n\n"
+            f"Te registramos como ciudadano de {usuario['municipio']}.\n\n"
+            f"Ahora puedes preguntarme sobre escribiendo el número correspondiente:\n\n"
+            "1️⃣ ¿Quién es Julio Roberto?\n"
+            "2️⃣ Experiencia\n"
+            "3️⃣ Proyectos\n"
+            "4️⃣ Cómo votar\n"
+            "5️⃣ Medio ambiente\n"
+            "6️⃣ Seguridad\n"
+            "7️⃣ Adulto mayor\n"
+            "8️⃣ Contacto"
         )
-        return ""  # Ya se envió el menú, no se devuelve texto
+        return menu
 
-    # Ya registrado → usar FAQ
+    # Ya registrado → procesar número o texto
     else:
         return procesar_mensaje(texto)
 
@@ -126,52 +113,51 @@ def manejar_conversacion(wa_id, texto):
 # RESPUESTAS FAQ POLÍTICAS
 # =========================
 def procesar_mensaje(texto):
-    texto = texto.lower()
+    texto = texto.strip().lower()
 
-    if "partido" in texto:
-        return "Pertenezco al Partido Conservador Colombiano 💙. Trabajamos por Cundinamarca con compromiso social y ambiental."
-
-    elif "votar" in texto:
-        return "🗳️ Para votar:\n1️⃣ Acude a tu puesto de votación\n2️⃣ Pide tarjetón Cámara – Cundinamarca\n3️⃣ Busca Partido Conservador\n4️⃣ Marca 💙 C101 💙\n5️⃣ Deposita tu voto"
-
-    elif "quien es" in texto or "julio roberto" in texto:
+    # Mapeo de opciones por número
+    if texto in ["1", "¿quién es julio roberto?", "quien es"]:
         return "Julio Roberto Salazar es Representante a la Cámara por Cundinamarca, ingeniero civil y líder social 🌱"
 
-    elif "experiencia" in texto:
+    elif texto in ["2", "experiencia"]:
         return "Cuenta con trayectoria en gestión del agua, riesgo, acción comunal y medio ambiente 💪"
 
-    elif "comision" in texto:
-        return "Hace parte de:\n✔️ Comisión Quinta\n✔️ Comisión de Paz\n✔️ Comisión de Transición Energética"
-
-    elif "campo" in texto or "agro" in texto:
+    elif texto in ["3", "proyectos"]:
         return "Impulsa dignidad agropecuaria, fortalecimiento UMATA y vías rurales 🚜"
 
-    elif "seguridad" in texto:
-        return "Ha promovido medidas contra extorsión y protección de menores 🛡️"
+    elif texto in ["4", "cómo votar", "como votar"]:
+        return "🗳️ Para votar:\n1️⃣ Acude a tu puesto de votación\n2️⃣ Pide tarjetón Cámara – Cundinamarca\n3️⃣ Busca Partido Conservador\n4️⃣ Marca 💙 C101 💙\n5️⃣ Deposita tu voto"
 
-    elif "adulto" in texto or "vejez" in texto:
-        return "Promueve vejez digna y pensiones justas 👴👵"
-
-    elif "discapacidad" in texto:
-        return "Autor de proyectos de apoyo a personas con discapacidad 💙"
-
-    elif "medio ambiente" in texto or "sumapaz" in texto:
+    elif texto in ["5", "medio ambiente"]:
         return "Defiende el agua, páramos y transición energética 🌿"
 
-    elif "contacto" in texto:
+    elif texto in ["6", "seguridad"]:
+        return "Ha promovido medidas contra extorsión y protección de menores 🛡️"
+
+    elif texto in ["7", "adulto mayor", "vejez"]:
+        return "Promueve vejez digna y pensiones justas 👴👵"
+
+    elif texto in ["8", "contacto"]:
         return "📧 julio.salazar@camara.gov.co\n📧 comunicacionesjulioroberto@gmail.com\n\n📘 Facebook: Julio Roberto Salazar Perdomo\n📸 Instagram: @JRobertoSalazarP\n🐦 X: @JRobertoSalazar"
 
     else:
-        return "👋 Estoy para ayudarte.\n\nPuedes preguntarme por:\n✔️ Quién es\n✔️ Experiencia\n✔️ Proyectos\n✔️ Cómo votar\n✔️ Medio ambiente\n✔️ Seguridad\n✔️ Adulto mayor\n✔️ Contacto"
+        # Si el texto no coincide con un número, volver a mostrar menú
+        return (
+            "No entendí tu opción 😅\n\nPor favor escribe el número correspondiente:\n"
+            "1️⃣ ¿Quién es Julio Roberto?\n"
+            "2️⃣ Experiencia\n"
+            "3️⃣ Proyectos\n"
+            "4️⃣ Cómo votar\n"
+            "5️⃣ Medio ambiente\n"
+            "6️⃣ Seguridad\n"
+            "7️⃣ Adulto mayor\n"
+            "8️⃣ Contacto"
+        )
 
 # =========================
-# ENVÍO MENSAJES (TEXTO O LISTA INTERACTIVA)
+# ENVÍO MENSAJES
 # =========================
-def enviar_mensaje(numero, mensaje, tipo="text", opciones=None):
-    """
-    tipo: "text" o "menu"
-    opciones: lista de opciones si tipo="menu"
-    """
+def enviar_mensaje(numero, mensaje):
     if not ACCESS_TOKEN or not PHONE_NUMBER_ID:
         print("Faltan variables de entorno")
         return
@@ -182,35 +168,12 @@ def enviar_mensaje(numero, mensaje, tipo="text", opciones=None):
         "Content-Type": "application/json"
     }
 
-    if tipo == "text" or not opciones:
-        payload = {
-            "messaging_product": "whatsapp",
-            "to": numero,
-            "type": "text",
-            "text": {"body": mensaje}
-        }
-
-    elif tipo == "menu" and opciones:
-        # Lista interactiva (hasta 10 opciones)
-        lista_items = [{"id": f"item{i+1}", "title": opt} for i, opt in enumerate(opciones)]
-        payload = {
-            "messaging_product": "whatsapp",
-            "to": numero,
-            "type": "interactive",
-            "interactive": {
-                "type": "list",
-                "body": {"text": mensaje},
-                "action": {
-                    "button": "Selecciona una opción",
-                    "sections": [
-                        {
-                            "title": "Menú de opciones",
-                            "rows": lista_items
-                        }
-                    ]
-                }
-            }
-        }
+    payload = {
+        "messaging_product": "whatsapp",
+        "to": numero,
+        "type": "text",
+        "text": {"body": mensaje}
+    }
 
     response = requests.post(url, headers=headers, json=payload)
     print("Respuesta Meta:", response.status_code, response.text)
@@ -220,3 +183,5 @@ def enviar_mensaje(numero, mensaje, tipo="text", opciones=None):
 # =========================
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
+
+
