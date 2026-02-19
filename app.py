@@ -157,10 +157,10 @@ def procesar_mensaje(texto):
     texto = texto.strip().lower()
 
     if texto in ["1", "¿quién es julio roberto?", "quien es"]:
-        return "Julio Roberto Salazar es Representante a la Cámara por Cundinamarca, ingeniero civil y líder social 🌱"
+        return "Julio Roberto Salazar es Representante a la Cámara por Cundinamarca, ingeniero civil, especialista y magíster en gerencia, orgullosamente cundinamarqués y un apasionado por el servicio social, el medio ambiente y el trabajo con las comunidades 🌱🌱"
 
     elif texto in ["2", "experiencia"]:
-        return "Cuenta con trayectoria en gestión del agua, riesgo, acción comunal y medio ambiente 💪"
+        return "Cuenta con una amplia trayectoria en el sector público. Ha trabajado en gestión del agua, riesgo de desastres, acción comunal y medio ambiente. Además, ha liderado entidades departamentales y hoy representa a Cundinamarca en el Congreso con una agenda social y ambiental 💪"
 
     elif texto in ["3", "proyectos"]:
         return "Impulsa dignidad agropecuaria, fortalecimiento UMATA y vías rurales 🚜"
@@ -220,6 +220,7 @@ def enviar_mensaje(numero, mensaje):
 # =========================
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
+
 
 
 
