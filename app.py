@@ -1,17 +1,29 @@
 import requests
-import os
 from flask import Flask, request, jsonify
 
 app = Flask(__name__)
 
-# 🔐 CONFIGURACIÓN
+# =========================
+# CONFIGURACIÓN
+# =========================
+
 VERIFY_TOKEN = "prueba123"
 
 ACCESS_TOKEN = "EAAmKGOiDrvQBQ1fIEpOLH7lzXv8MLuMZAWpgP8euzahBuD7ZB5b8VSjvbymR2KSiQ1stZAUnTVZBn3qxdFZCxgCeDpqZBZARsTUHZCniukt8rAZBgsRavwp3wqzZCUJXeGKwTMqRR1AOfhWZAfGgZA7DUhcXehf3teX53EWCpQBRekr8aZCTyNZBdw1b4KhZCRopnb981oBi6ZCSqsipnsgAd0ZAy3mSeEOzyraGezYbDQaTt1GN8vs60K6y5dVusFzmlrPTjymnn16kqxd9JKu1IlweiZCwZDZD"
 PHONE_NUMBER_ID = "1001578813037387"
 
+
 # =========================
-# VERIFICACIÓN WEBHOOK
+# RUTA PRINCIPAL (PARA RENDER)
+# =========================
+
+@app.route("/", methods=["GET"])
+def home():
+    return "Bot activo", 200
+
+
+# =========================
+# VERIFICACIÓN WEBHOOK META
 # =========================
 
 @app.route("/webhook", methods=["GET"])
@@ -34,19 +46,19 @@ def webhook():
     print("Mensaje recibido:", data)
 
     try:
-        if "entry" in data:
+        if data and "entry" in data:
             for entry in data["entry"]:
                 for change in entry["changes"]:
-                    value = change["value"]
+                    value = change.get("value", {})
 
                     if "messages" in value:
-                        for message in value["messages"]:
-                            sender = message["from"]
+                        for msg in value["messages"]:
+                            sender = msg["from"]
 
-                            if message["type"] == "text":
-                                text = message["text"]["body"]
-                                response = procesar_mensaje(text)
-                                enviar_mensaje(sender, response)
+                            if msg.get("type") == "text":
+                                texto = msg["text"]["body"]
+                                respuesta = procesar_mensaje(texto)
+                                enviar_mensaje(sender, respuesta)
 
     except Exception as e:
         print("Error en webhook:", e)
@@ -88,7 +100,7 @@ def enviar_mensaje(numero, mensaje):
         "Content-Type": "application/json"
     }
 
-    data = {
+    payload = {
         "messaging_product": "whatsapp",
         "to": numero,
         "type": "text",
@@ -97,17 +109,5 @@ def enviar_mensaje(numero, mensaje):
         }
     }
 
-    response = requests.post(url, headers=headers, json=data)
+    response = requests.post(url, headers=headers, json=payload)
     print("Respuesta Meta:", response.status_code, response.text)
-
-
-# =========================
-# ARRANQUE PARA RENDER
-# =========================
-
-if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5000))
-    app.run(host="0.0.0.0", port=port)
-
-
-
