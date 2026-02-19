@@ -10,8 +10,10 @@ VERIFY_TOKEN = "prueba123"
 ACCESS_TOKEN = "EAAmKGOiDrvQBQ1fIEpOLH7lzXv8MLuMZAWpgP8euzahBuD7ZB5b8VSjvbymR2KSiQ1stZAUnTVZBn3qxdFZCxgCeDpqZBZARsTUHZCniukt8rAZBgsRavwp3wqzZCUJXeGKwTMqRR1AOfhWZAfGgZA7DUhcXehf3teX53EWCpQBRekr8aZCTyNZBdw1b4KhZCRopnb981oBi6ZCSqsipnsgAd0ZAy3mSeEOzyraGezYbDQaTt1GN8vs60K6y5dVusFzmlrPTjymnn16kqxd9JKu1IlweiZCwZDZD"
 PHONE_NUMBER_ID = "1001578813037387"
 
+# =========================
+# VERIFICACIÓN WEBHOOK
+# =========================
 
-# 🔎 VERIFICACIÓN DEL WEBHOOK (META)
 @app.route("/webhook", methods=["GET"])
 def verify():
     token = request.args.get("hub.verify_token")
@@ -22,26 +24,40 @@ def verify():
     return "Error de verificación", 403
 
 
-# 📩 RECIBIR MENSAJES
+# =========================
+# RECIBIR MENSAJES
+# =========================
+
 @app.route("/webhook", methods=["POST"])
 def webhook():
     data = request.json
     print("Mensaje recibido:", data)
 
     try:
-        message = data["entry"][0]["changes"][0]["value"]["messages"][0]["text"]["body"]
-        sender = data["entry"][0]["changes"][0]["value"]["messages"][0]["from"]
+        if "entry" in data:
+            for entry in data["entry"]:
+                for change in entry["changes"]:
+                    value = change["value"]
 
-        response = procesar_mensaje(message)
-        enviar_mensaje(sender, response)
+                    if "messages" in value:
+                        for message in value["messages"]:
+                            sender = message["from"]
+
+                            if message["type"] == "text":
+                                text = message["text"]["body"]
+                                response = procesar_mensaje(text)
+                                enviar_mensaje(sender, response)
 
     except Exception as e:
-        print("Error:", e)
+        print("Error en webhook:", e)
 
     return jsonify({"status": "ok"}), 200
 
 
-# 🧠 LÓGICA DEL BOT
+# =========================
+# LÓGICA DEL BOT
+# =========================
+
 def procesar_mensaje(texto):
     texto = texto.lower()
 
@@ -60,7 +76,10 @@ def procesar_mensaje(texto):
 """
 
 
-# 📤 ENVIAR MENSAJE A WHATSAPP
+# =========================
+# ENVIAR MENSAJE A WHATSAPP
+# =========================
+
 def enviar_mensaje(numero, mensaje):
     url = f"https://graph.facebook.com/v19.0/{PHONE_NUMBER_ID}/messages"
 
@@ -79,12 +98,16 @@ def enviar_mensaje(numero, mensaje):
     }
 
     response = requests.post(url, headers=headers, json=data)
-    print("Respuesta Meta:", response.text)
+    print("Respuesta Meta:", response.status_code, response.text)
 
 
-# 🚀 IMPORTANTE PARA RENDER
+# =========================
+# ARRANQUE PARA RENDER
+# =========================
+
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
+
 
 
